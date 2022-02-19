@@ -1,1 +1,2 @@
-# This repo contains actions that are used inside inkawu
+# Github actions for inkawu
+No backwards compatability is guaranteed
