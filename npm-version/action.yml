@@ -11,6 +11,9 @@ inputs:
   name:
     description: "Name to be used in commit push"
     required: true
+  workspace:
+    description: "Npm package workspace if needed"
+    required: false
 
 runs:
   using: composite
@@ -34,7 +37,12 @@ runs:
         contains(env.commit_message, 'chore!')
       id: major
       run: |
-        npm version major
+        if ${{ inputs.workspace }}
+        then
+          npm version major -w ${{ inputs.workspace }}
+        else
+          npm version major
+        fi
         echo '::set-output name=version::major'
 
     - name: Bump version minor
@@ -42,7 +50,12 @@ runs:
       if: contains(env.commit_message, 'feat') && steps.major.outputs.version != 'major'
       id: minor
       run: |
-        npm version minor
+        if ${{ inputs.workspace }}
+        then
+          npm version minor -w ${{ inputs.workspace }}
+        else
+          npm version minor
+        fi
         echo '::set-output name=version::minor'
 
     - name: Bump version patch
@@ -55,7 +68,13 @@ runs:
         contains(env.commit_message, 'test')) &&
         steps.minor.outputs.version != 'minor' &&
         steps.major.outputs.version != 'major'
-      run: npm version patch
+      run: |
+        if ${{ inputs.workspace }}
+        then
+          npm version patch -w ${{ inputs.workspace }}
+        else
+          npm version patch
+        fi
 
     - name: Push version Bump
       shell: bash
