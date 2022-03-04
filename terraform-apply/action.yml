@@ -32,8 +32,6 @@ inputs:
 
 runs:
   using: composite
-  env:
-    GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
 
   steps:
     - name: Setup terraform
@@ -42,6 +40,8 @@ runs:
     - name: Terraform init
       shell: bash
       working-directory: ${{ inputs.working_directory }}
+      env:
+        GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: terraform init -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
     - name: Download artifact
@@ -54,5 +54,7 @@ runs:
     - name: Terraform apply
       shell: bash
       working-directory: ${{ inputs.working_directory }}
+      env:
+        GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: |
         terraform apply -auto-approve -input=false ${{ inputs.terraform_plan_filename }}
