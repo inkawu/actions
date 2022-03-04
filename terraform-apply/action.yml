@@ -15,7 +15,7 @@ inputs:
     required: true
     description: Name of the google cloud bucket
 
-  terraform_file_name:
+  terraform_plan_file_name:
     required: false
     default: terraform.tfstate
     description: Filename of the tfstate file
@@ -55,4 +55,4 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       run: |
-        terraform apply -auto-approve -input=false ${{ inputs.terraform_file_name }}
+        terraform apply -auto-approve -input=false ${{ inputs.terraform_plan_file_name }}
