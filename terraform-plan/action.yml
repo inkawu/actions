@@ -39,50 +39,50 @@ runs:
     GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
 
   steps:
-  - id: auth
-    name: Authenticate to google cloud
-    uses: google-github-actions/auth@v0
-    with:
-      credentials_json: ${{ inputs.google_credentials }}
+    - id: auth
+      name: Authenticate to google cloud
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ inputs.google_credentials }}
 
-  - name: Set up Cloud SDK
-    uses: google-github-actions/setup-gcloud@v0
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
 
-  - id: check_bucket
-    name: Check if bucket exists
-    shell: bash
-    run: gsutil ls -p ${{ inputs.project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}"
+    - id: check_bucket
+      name: Check if bucket exists
+      shell: bash
+      run: gsutil ls -p ${{ inputs.project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}"
 
-  - id: create_bucket
-    if: contains(steps.check_bucket.outputs.bucket_uri, inputs.terraform_backend_bucket_name) != true
-    name: Create terraform storage bucket
-    shell: bash
-    run: gsutil mb -p ${{ inputs.project }} -l ${{ inputs.location }} gs://${{ inputs.terraform_backend_bucket_name }}
+    - id: create_bucket
+      if: contains(steps.check_bucket.outputs.bucket_uri, inputs.terraform_backend_bucket_name) != true
+      name: Create terraform storage bucket
+      shell: bash
+      run: gsutil mb -p ${{ inputs.project }} -l ${{ inputs.location }} gs://${{ inputs.terraform_backend_bucket_name }}
 
-  - name: Set up terraform
-    uses: hashicorp/setup-terraform@v1
+    - name: Set up terraform
+      uses: hashicorp/setup-terraform@v1
 
-  - name: Terraform init
-    shell: bash
-    run: terraform init -chdir=${{ inputs.working_directory }} \
-      -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
+    - name: Terraform init
+      shell: bash
+      run: terraform init -chdir=${{ inputs.working_directory }} \
+        -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
-  - name: Terraform validate
-    shell: bash
-    run: terraform validate -chdir=${{ inputs.working_directory }}
+    - name: Terraform validate
+      shell: bash
+      run: terraform validate -chdir=${{ inputs.working_directory }}
 
-  - name: Terraform format
-    shell: bash
-    run: terraform fmt -check -chdir=${{ inputs.working_directory }}
+    - name: Terraform format
+      shell: bash
+      run: terraform fmt -check -chdir=${{ inputs.working_directory }}
 
-  - name: Terraform plan
-    shell: bash
-    run: |
-      terraform plan -chdir=${{ inputs.working_directory }}
-      terraform plan -o ${{ inputs.terraform_plan_filename }} -chdir=${{ inputs.working_directory }}
+    - name: Terraform plan
+      shell: bash
+      run: |
+        terraform plan -chdir=${{ inputs.working_directory }}
+        terraform plan -o ${{ inputs.terraform_plan_filename }} -chdir=${{ inputs.working_directory }}
 
-  - name: upload terraform plan
-    uses: actions/upload-artifact@v2
-    with:
-      name: ${{ inputs.terraform_plan_artifact_name }}
-      path: ${{ inputs.working_directory }}/${{ inputs.terraform_plan_filename }}
+    - name: upload terraform plan
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ inputs.terraform_plan_artifact_name }}
+        path: ${{ inputs.working_directory }}/${{ inputs.terraform_plan_filename }}
