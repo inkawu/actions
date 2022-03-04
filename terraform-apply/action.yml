@@ -41,9 +41,7 @@ runs:
 
     - name: Terraform init
       shell: bash
-      run: terraform init \
-        -chdir=${{ inputs.working_directory }}
-        -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
+      run: terraform init -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
     - name: Download artifact
       if: inputs.download_artifact == true

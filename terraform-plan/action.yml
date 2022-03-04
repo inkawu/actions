@@ -64,8 +64,7 @@ runs:
       shell: bash
       env:
         GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
-      run: terraform init -chdir=${{ inputs.working_directory }} \
-        -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
+      run: terraform init -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
     - name: Terraform validate
       shell: bash
