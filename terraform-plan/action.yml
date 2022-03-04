@@ -8,7 +8,7 @@ inputs:
 
   working_directory:
     required: false
-    default: ./
+    default: .
     description: The working directory of the terraform file
 
   terraform_backend_bucket_name:
