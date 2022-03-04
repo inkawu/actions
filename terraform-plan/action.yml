@@ -35,8 +35,6 @@ inputs:
 
 runs:
   using: composite
-  env:
-    GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
 
   steps:
     - id: auth
@@ -64,6 +62,8 @@ runs:
 
     - name: Terraform init
       shell: bash
+      env:
+        GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: terraform init -chdir=${{ inputs.working_directory }} \
         -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
@@ -77,6 +77,8 @@ runs:
 
     - name: Terraform plan
       shell: bash
+      env:
+        GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: |
         terraform plan -chdir=${{ inputs.working_directory }}
         terraform plan -o ${{ inputs.terraform_plan_filename }} -chdir=${{ inputs.working_directory }}
