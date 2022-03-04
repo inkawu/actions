@@ -20,7 +20,7 @@ inputs:
     default: terraform.tfstate
     description: Filename of the tfstate file
 
-  terraform_artifact_name:
+  terraform_plan_artifact_name:
     required: false
     default: terraform_plan
     description: Artifact name
@@ -48,7 +48,7 @@ runs:
       if: inputs.download_artifact == true
       uses: actions/download-artifact@v3
       with:
-        name: ${{ terraform_artifact_name }}
+        name: ${{ inputs.terraform_plan_artifact_name }}
         path: ${{ inputs.working_directory }}
 
     - name: Terraform apply

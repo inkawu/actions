@@ -28,7 +28,7 @@ inputs:
     default: terraform.tfstate
     description: Filename of the tfstate file
 
-  terraform_artifact_name:
+  terraform_plan_artifact_name:
     required: false
     default: terraform_plan
     description: Artifact name
