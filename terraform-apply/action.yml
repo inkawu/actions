@@ -1,0 +1,51 @@
+name: Terraform apply
+description: Terraform apply
+
+inputs:
+  google_credentials:
+    required: true
+    description: Credentials used to authenticate to google
+
+  terraform_backend_bucket_name:
+    required: true
+    description: Name of the google cloud bucket
+
+  terraform_file_name:
+    required: false
+    default: terraform.tfstate
+    description: Filename of the tfstate file
+
+  terraform_artifact_name:
+    required: false
+    default: terraform_plan
+    description: Artifact name
+
+  download_artifact:
+    required: false
+    default: false
+    description: If an artifact should be downloaded before running terraform apply
+
+runs:
+  using: composite
+  env:
+    GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
+
+  steps:
+  - name: Setup terraform
+    uses: hashicorp/setup-terraform@v1
+
+  - name: Terraform init
+    shell: bash
+    run: terraform init \
+      -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
+
+  - name: Download artifact
+    if: inputs.download_artifact == true
+    uses: actions/download-artifact@v3
+    with:
+      name: ${{ terraform_artifact_name }}
+
+  - name: Terraform apply
+    shell: bash
+    run: |
+      terraform apply -auto-approve -input=false ${{ inputs.terraform_file_name }}

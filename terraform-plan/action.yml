@@ -1,0 +1,77 @@
+name: Terraform plan
+description: Terraform plan
+
+inputs:
+  google_credentials:
+    required: true
+    description: Credentials used to authenticate to google
+
+  terraform_backend_bucket_name:
+    required: true
+    description: Name of the google cloud bucket
+
+  google_project:
+    required: true
+    description: Name of the project
+
+  google_location:
+    required: true
+    description: Location to deploy services
+
+  terraform_file_name:
+    required: false
+    default: terraform.tfstate
+    description: Filename of the tfstate file
+
+  terraform_artifact_name:
+    required: false
+    default: terraform_plan
+    description: Artifact name
+
+runs:
+  using: composite
+  env:
+    GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
+
+  steps:
+  - id: auth
+    name: Authenticate to google cloud
+    uses: google-github-actions/auth@v0
+    with:
+      credentials_json: ${{ inputs.google_credentials }}
+
+  - name: Set up Cloud SDK
+    uses: google-github-actions/setup-gcloud@v0
+
+  - id: check_bucket
+    name: Check if bucket exists
+    shell: bash
+    run: gsutil ls -p ${{ inputs.project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}"
+
+  - id: create_bucket
+    if: contains(steps.check_bucket.outputs.bucket_uri, inputs.terraform_backend_bucket_name) != true
+    name: Create terraform storage bucket
+    shell: bash
+    run: gsutil mb -p ${{ inputs.project }} -l ${{ inputs.location }} gs://${{ inputs.terraform_backend_bucket_name }}
+
+  - name: Set up terraform
+    uses: hashicorp/setup-terraform@v1
+
+  - name: Terraform init
+    shell: bash
+    run: terraform init \
+      -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
+
+  - name: terraform validate
+    shell: bash
+    run: terraform validate
+
+  - name: terraform plan
+    shell: bash
+    run: terraform plan -o ${{ inputs.terraform_plan_filename }}
+
+  - name: upload terraform plan
+    uses: actions/upload-artifact@v2
+    with:
+      name: ${{ inputs.terraform_plan_artifact_name }}
+      path: ${{ inputs.terraform_plan_filename }}
