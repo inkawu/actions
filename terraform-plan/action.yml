@@ -77,7 +77,9 @@ runs:
 
   - name: Terraform plan
     shell: bash
-    run: terraform plan -o ${{ inputs.terraform_plan_filename }} -chdir=${{ inputs.working_directory }}
+    run: |
+      terraform plan -chdir=${{ inputs.working_directory }}
+      terraform plan -o ${{ inputs.terraform_plan_filename }} -chdir=${{ inputs.working_directory }}
 
   - name: upload terraform plan
     uses: actions/upload-artifact@v2
