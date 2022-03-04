@@ -6,6 +6,11 @@ inputs:
     required: true
     description: Credentials used to authenticate to google
 
+  working_directory:
+    required: false
+    default: ./
+    description: The working directory of the terraform file
+
   terraform_backend_bucket_name:
     required: true
     description: Name of the google cloud bucket
@@ -59,16 +64,20 @@ runs:
 
   - name: Terraform init
     shell: bash
-    run: terraform init \
+    run: terraform init -chdir=${{ inputs.working_directory }} \
       -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
-  - name: terraform validate
+  - name: Terraform validate
     shell: bash
-    run: terraform validate
+    run: terraform validate -chdir=${{ inputs.working_directory }}
 
-  - name: terraform plan
+  - name: Terraform format
     shell: bash
-    run: terraform plan -o ${{ inputs.terraform_plan_filename }}
+    run: terraform fmt -check -chdir=${{ inputs.working_directory }}
+
+  - name: Terraform plan
+    shell: bash
+    run: terraform plan -o ${{ inputs.terraform_plan_filename }} -chdir=${{ inputs.working_directory }}
 
   - name: upload terraform plan
     uses: actions/upload-artifact@v2

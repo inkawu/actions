@@ -6,6 +6,11 @@ inputs:
     required: true
     description: Credentials used to authenticate to google
 
+  working_directory:
+    required: false
+    default: ./
+    description: The working directory of the terraform file
+
   terraform_backend_bucket_name:
     required: true
     description: Name of the google cloud bucket
@@ -37,6 +42,7 @@ runs:
   - name: Terraform init
     shell: bash
     run: terraform init \
+      -chdir=${{ inputs.working_directory }}
       -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
   - name: Download artifact
@@ -44,8 +50,9 @@ runs:
     uses: actions/download-artifact@v3
     with:
       name: ${{ terraform_artifact_name }}
+      path: ${{ inputs.working_directory }}
 
   - name: Terraform apply
     shell: bash
     run: |
-      terraform apply -auto-approve -input=false ${{ inputs.terraform_file_name }}
+      terraform apply -auto-approve -input=false ${{ inputs.terraform_file_name }} -chdir=${{ inputs.working_directory }}
