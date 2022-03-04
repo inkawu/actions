@@ -49,13 +49,13 @@ runs:
     - id: check_bucket
       name: Check if bucket exists
       shell: bash
-      run: gsutil ls -p ${{ inputs.project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}"
+      run: gsutil ls -p ${{ inputs.google_project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}"
 
     - id: create_bucket
       if: contains(steps.check_bucket.outputs.bucket_uri, inputs.terraform_backend_bucket_name) != true
       name: Create terraform storage bucket
       shell: bash
-      run: gsutil mb -p ${{ inputs.project }} -l ${{ inputs.location }} gs://${{ inputs.terraform_backend_bucket_name }}
+      run: gsutil mb -p ${{ inputs.google_project }} -l ${{ inputs.google_location }} gs://${{ inputs.terraform_backend_bucket_name }}
 
     - name: Set up terraform
       uses: hashicorp/setup-terraform@v1
