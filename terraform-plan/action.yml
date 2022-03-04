@@ -83,4 +83,4 @@ runs:
     uses: actions/upload-artifact@v2
     with:
       name: ${{ inputs.terraform_plan_artifact_name }}
-      path: ${{ inputs.terraform_plan_filename }}
+      path: ${{ inputs.working_directory }}/${{ inputs.terraform_plan_filename }}
