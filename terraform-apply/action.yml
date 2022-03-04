@@ -41,16 +41,18 @@ runs:
 
     - name: Terraform init
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
       run: terraform init -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
 
     - name: Download artifact
       if: inputs.download_artifact == true
       uses: actions/download-artifact@v3
+      working-directory: ${{ inputs.working_directory }}
       with:
         name: ${{ terraform_artifact_name }}
-        path: ${{ inputs.working_directory }}
 
     - name: Terraform apply
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
       run: |
-        terraform apply -auto-approve -input=false ${{ inputs.terraform_file_name }} -chdir=${{ inputs.working_directory }}
+        terraform apply -auto-approve -input=false ${{ inputs.terraform_file_name }}

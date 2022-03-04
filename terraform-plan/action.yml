@@ -65,17 +65,21 @@ runs:
       env:
         GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: terraform init -backend-config="bucket=${{ inputs.terraform_backend_bucket_name }}"
+      working-directory: ${{ inputs.working_directory }}
 
     - name: Terraform validate
       shell: bash
-      run: terraform validate -chdir=${{ inputs.working_directory }}
+      run: terraform validate
+      working-directory: ${{ inputs.working_directory }}
 
     - name: Terraform format
       shell: bash
-      run: terraform fmt -check -chdir=${{ inputs.working_directory }}
+      run: terraform fmt -check
+      working-directory: ${{ inputs.working_directory }}
 
     - name: Terraform plan
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
       env:
         GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: |
@@ -84,6 +88,7 @@ runs:
 
     - name: upload terraform plan
       uses: actions/upload-artifact@v2
+      working-directory: ${{ inputs.working_directory }}
       with:
         name: ${{ inputs.terraform_plan_artifact_name }}
-        path: ${{ inputs.working_directory }}/${{ inputs.terraform_plan_filename }}
+        path: ${{ inputs.terraform_plan_filename }}
