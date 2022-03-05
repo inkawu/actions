@@ -49,7 +49,7 @@ runs:
     - id: check_bucket
       name: Check if bucket exists
       shell: bash
-      run: gsutil ls -p ${{ inputs.google_project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}"
+      run: gsutil ls -p ${{ inputs.google_project }} | grep gs://${{ inputs.terraform_backend_bucket_name }}/ | xargs -I {} echo "::set-output name=bucket_uri::{}" || true
 
     - id: create_bucket
       if: contains(steps.check_bucket.outputs.bucket_uri, inputs.terraform_backend_bucket_name) != true
