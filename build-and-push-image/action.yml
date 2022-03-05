@@ -31,6 +31,9 @@ inputs:
     default: Dockerfile
     description: Name of the dockerfile
 
+outputs:
+  tagged_image_uri: ${{ steps.publish.outputs.tagged_image_uri }}
+
 runs:
   using: composite
   steps:
@@ -69,6 +72,7 @@ runs:
 
   # Push the Docker image to Google Container Registry
   - name: Publish
+    id: publish
     env:
       GITHUB_SHA: ${{ github.sha }}
       GITHUB_REF: ${{ github.ref }}
@@ -80,7 +84,9 @@ runs:
     working-directory: ${{ inputs.working_directory }}
     run: |
       export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
-      echo $TAG
-      docker push "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":"$TAG"
-      docker tag "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":"$TAG" "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":latest
-      docker push "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":latest
+      export TAGGED_IMAGE_URI="$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":"$TAG"
+      export LATEST_IMAGE_URI="$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":latest=
+      docker push $TAGGED_IMAGE_URI
+      docker tag $TAGGED_IMAGE_URI $LATEST_IMAGE_URI
+      docker push $LATEST_IMAGE_URI
+      echo "::set-output name=docker_image_uri::$TAGGED_IMAGE_URI"
