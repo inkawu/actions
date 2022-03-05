@@ -31,15 +31,6 @@ inputs:
     default: Dockerfile
     description: Name of the dockerfile
 
-env:
-  GITHUB_SHA: ${{ github.sha }}
-  GITHUB_REF: ${{ github.ref }}
-  REPOSITORY: ${{ inputs.google_repository_name }}
-  IMAGE: ${{ inputs.image_name }}
-  REGISTRY_HOSTNAME: ${{ inputs.google_region }}-docker.pkg.dev
-  PROJECT_ID: ${{ inputs.google_project }}
-  REGION: ${{ inputs.google_region }}
-
 runs:
   using: composite
   steps:
