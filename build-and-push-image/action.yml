@@ -1,0 +1,95 @@
+name: Gcloud run deploy
+
+inputs:
+  google_project:
+    required: true
+    description: Google project id
+  google_region:
+    required: true
+    description: Region of artifact registry
+  image_name:
+    required: true
+    description: Name of image
+  google_repository_name:
+    required: true
+    description: Name of image repository
+  google_credentials:
+    required: true
+    description: Google credentials
+  github_sha:
+    required: true
+    description: Commit sha
+  github_ref:
+    required: true
+    description: Ref of commit
+  working_directory:
+    required: false
+    default: .
+    description: The directory of the dockerfile
+  docker_filename:
+    required: false
+    default: Dockerfile
+    description: Name of the dockerfile
+
+env:
+  GITHUB_SHA: ${{ github.sha }}
+  GITHUB_REF: ${{ github.ref }}
+  REPOSITORY: ${{ inputs.google_repository_name }}
+  IMAGE: ${{ inputs.image_name }}
+  REGISTRY_HOSTNAME: ${{ inputs.google_region }}-docker.pkg.dev
+  PROJECT_ID: ${{ inputs.google_project }}
+  REGION: ${{ inputs.google_region }}
+
+runs:
+  using: composite
+  steps:
+  - name: Setup gcloud CLI
+    uses: google-github-actions/setup-gcloud@v0
+
+  - name: 'Authenticate to Google Cloud'
+    uses: 'google-github-actions/auth@v0'
+    with:
+      credentials_json: ${{ inputs.google_credentials }}
+
+  # Configure docker to use the gcloud command-line tool as a credential helper
+  - name: Configure docker
+    env:
+      REGISTRY_HOSTNAME: ${{ inputs.google_region }}-docker.pkg.dev
+    shell: bash
+    run: gcloud auth configure-docker "$REGISTRY_HOSTNAME" --quiet
+
+  # Build the Docker image
+  - name: Build
+    env:
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_REF: ${{ github.ref }}
+      REPOSITORY: ${{ inputs.google_repository_name }}
+      IMAGE: ${{ inputs.image_name }}
+      REGISTRY_HOSTNAME: ${{ inputs.google_region }}-docker.pkg.dev
+      PROJECT_ID: ${{ inputs.google_project }}
+    working-directory: ${{ inputs.working_directory }}
+    shell: bash
+    run: |
+        export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
+        echo $TAG
+        docker build -f ${{ inputs.docker_filename }} -t "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":"$TAG" \
+          --build-arg GITHUB_SHA="$GITHUB_SHA" \
+          --build-arg GITHUB_REF="$GITHUB_REF" .
+
+  # Push the Docker image to Google Container Registry
+  - name: Publish
+    env:
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_REF: ${{ github.ref }}
+      REPOSITORY: ${{ inputs.google_repository_name }}
+      IMAGE: ${{ inputs.image_name }}
+      REGISTRY_HOSTNAME: ${{ inputs.google_region }}-docker.pkg.dev
+      PROJECT_ID: ${{ inputs.google_project }}
+    shell: bash
+    working-directory: ${{ inputs.working_directory }}
+    run: |
+      export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
+      echo $TAG
+      docker push "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":"$TAG"
+      docker tag "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":"$TAG" "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":latest
+      docker push "$REGISTRY_HOSTNAME"/"$PROJECT_ID"/"$REPOSITORY"/"$IMAGE":latest
