@@ -91,4 +91,4 @@ runs:
       docker push $TAGGED_IMAGE_URI
       docker tag $TAGGED_IMAGE_URI $LATEST_IMAGE_URI
       docker push $LATEST_IMAGE_URI
-      echo "::set-output name=docker_image_uri::$TAGGED_IMAGE_URI"
+      echo "::set-output name=tagged_image_uri::$TAGGED_IMAGE_URI"
