@@ -83,6 +83,7 @@ runs:
       env:
         GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: |
+        terraform force-unlock -force 1646495534730468 || true
         terraform plan
         terraform plan -out ${{ inputs.terraform_plan_filename }}
 
