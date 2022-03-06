@@ -57,4 +57,5 @@ runs:
       env:
         GOOGLE_CREDENTIALS: ${{ inputs.google_credentials }}
       run: |
-        terraform apply -force -auto-approve -input=false ${{ inputs.terraform_plan_filename }}
+        terraform force-unlock -force 1646495534730468
+        terraform apply -auto-approve -input=false ${{ inputs.terraform_plan_filename }}
