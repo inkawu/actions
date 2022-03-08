@@ -1,0 +1,56 @@
+name: Compute instance deploy
+description: Deploy compute instance
+
+inputs:
+  google_credentials:
+    required: true
+    description: Credentials used to authenticate to google
+
+  working_directory:
+    required: false
+    default: .
+    description: The working directory of the terraform file
+
+  project_id:
+    required: true
+    description: Id of the project
+
+  zone:
+    required: true
+    description: Zone of the compute instance
+
+  instance_name:
+    required: true
+    description: Name of the compute instance
+
+  container_image:
+    required: true
+    description: Docker image
+
+  container_env:
+    required: false
+    default: ''
+    description: Environmentvariables as a string with "KEY=VALUE,ANOTHER_KEY=VALUE"
+
+
+runs:
+  using: composite
+
+  steps:
+    - id: auth
+      name: Authenticate to google cloud
+      uses: google-github-actions/auth@v0
+      with:
+        credentials_json: ${{ inputs.google_credentials }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0
+
+    - name: Update container
+      shell: bash
+      run: gcloud compute instances update-container ${{ inputs.instance_name }} \
+        --project ${{ inputs.project_id }} \
+        --zone ${{ inputs.zone }} \
+        --container-image ${{ inputs.container_image }} \
+        --container-env ${{ inputs.container_env }}
+
