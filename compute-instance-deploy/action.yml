@@ -49,10 +49,10 @@ runs:
     - name: Find instance
       id: list
       shell: bash
-      run: echo "::set-output name=instance::$(gcloud compute instances list --filter=NAME=${{ inputs.instance_name }})"
+      run: gcloud compute instances list --filter="NAME=${{ inputs.instance_name }}" --format=json | jq '.[0]?.name?' | xargs -I {} [ "{}" != "null" ]
 
     - name: Create instance
-      if: contains(steps.list.outputs.instance, inputs.instance_name)
+      if: ${{ failure() }}
       shell: bash
       run: gcloud compute instances create-with-container ${{ inputs.instance_name }} \
         --project ${{ inputs.project_id }} \
@@ -61,7 +61,7 @@ runs:
         --container-env ${{ inputs.container_env }}
 
     - name: Update container
-      if: !contains(steps.list.outputs.instance, inputs.instance_name)
+      if: ${{ success() }}
       shell: bash
       run: gcloud compute instances update-container ${{ inputs.instance_name }} \
         --project ${{ inputs.project_id }} \
