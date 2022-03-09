@@ -32,6 +32,16 @@ inputs:
     default: ''
     description: Environmentvariables as a string with "KEY=VALUE,ANOTHER_KEY=VALUE"
 
+  additional_create_flags:
+    required: false
+    default: ''
+    description: Additional flags to add to create script
+
+  additional_update_flags:
+    required: false
+    default: ''
+    description: Additional flags to the update script
+
 
 runs:
   using: composite
@@ -60,7 +70,8 @@ runs:
           --project ${{ inputs.project_id }} \
           --zone ${{ inputs.zone }} \
           --container-image ${{ inputs.container_image }} \
-          --container-env ${{ inputs.container_env }}
+          --container-env ${{ inputs.container_env }} \
+          ${{ inputs.additional_create_flags }}
 
     - name: Update container
       if: ${{ success() }}
@@ -70,5 +81,6 @@ runs:
           --project ${{ inputs.project_id }} \
           --zone ${{ inputs.zone }} \
           --container-image ${{ inputs.container_image }} \
-          --container-env "${{ inputs.container_env }}"
+          --container-env "${{ inputs.container_env }}" \
+          ${{ inputs.additional_update_flags }}
 
