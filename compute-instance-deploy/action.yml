@@ -49,6 +49,7 @@ runs:
     - name: Find instance
       id: list
       shell: bash
+      continue-on-error: true
       run: gcloud compute instances list --filter="NAME=${{ inputs.instance_name }}" --format=json | jq '.[0]?.name?' | xargs -I {} [ "{}" != "null" ]
 
     - name: Create instance
@@ -56,6 +57,7 @@ runs:
       shell: bash
       run: |
         gcloud compute instances create-with-container ${{ inputs.instance_name }} \
+          --machine-type="e2-micro" \
           --project ${{ inputs.project_id }} \
           --zone ${{ inputs.zone }} \
           --container-image ${{ inputs.container_image }} \
